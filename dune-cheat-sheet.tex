@@ -6,6 +6,7 @@
 \usepackage{xcolor}
 
 \def\cxx{\lstinline[language=C++]}
+\def\sh{\lstinline[language=sh]}
 \lstset{basicstyle=\ttfamily}
 \lstset{
   language=C++,
@@ -18,27 +19,149 @@
   emph={bool,int,unsigned,char,true,false,void}, emphstyle=\color{blue},
   emph={[2]\#include,\#define,\#ifdef,\#endif}, emphstyle={[2]\color{violet}},
   emph={[3]stage}, emphstyle={[3]\color{purple}},
-  extendedchars=true, escapeinside={/*@}{@*/},
+  extendedchars=true, escapeinside={@}{@},
   breaklines=false,
+  frame=single,
 }
+
+\setlength\parindent{0pt}
 
 \begin{document}
 
-\section{\cxx{dune-common}}
+\section*{In General}
 
-\cxx{FieldVector<T, size>} \cxx{FieldMatrix<T, rows, cols>}
+\cxx{main()} template
+\begin{lstlisting}
+#include <config.h>
 
-\cxx{DynamicVector<T>} \cxx{DynamicMatrix<T>}
+#include <dune/common/parallel/mpihelper.hh>
 
-\cxx{MPIHelper}
+int main(int argc, char **argv)
+{
+  Dune::MPIHelper::instance(argc, argv);
 
-\cxx{DUNE_THROW(ExceptionType, "Message " << "for " << "e.what()")}
+  // your code goes here
+}
+\end{lstlisting}
 
-\cxx{className<t>()} \cxx{className(obj)}
+\sh{.cc}-file template
+\begin{lstlisting}
+#include <config.h>
 
-\cxx{ParameterTree}
+// your code and includes go here
+\end{lstlisting}
 
-\section{\cxx{dune-geometry}}
+\sh{.hh}-file template
+\begin{lstlisting}
+// For a header that is included like
+// #include <dune/module/dir/header-name.hh>
+#ifndef DUNE_MODULE_DIR_HEADER_NAME_HH
+#define DUNE_MODULE_DIR_HEADER_NAME_HH
+
+// your code and includes go here
+// do not #include <config.h>
+
+#endif // DUNE_MODULE_DIR_HEADER_NAME_HH
+\end{lstlisting}
+
+\section*{\cxx{dune-common}}
+
+In the following, \cxx{r} is of type \cxx{R}, which may be a scalar real type,
+e.g. \cxx{double} or \cxx{float}.  \cxx{k} is of type \cxx{K}, which may be
+may be \cxx{R} or \cxx{std::complex<R>}.
+
+\cxx{template<class K, int size> class FieldVector;}
+\begin{lstlisting}
+#include <dune/common/fvector.hh>
+
+FieldVector<K, 2> x = { 0, 1 }; // @$x_0:=0,\quad x_1:=1$@
+FieldVector<K, 2> y(k);         // @$x_i:=k\quad\forall i$@
+
+assert(i < x.dim()); // get number of entries
+k = x[i]; x[i] = k;  // access/assign entry
+for(const auto &entry : x)
+  k += entry;        // access each entry
+for(auto &entry : x)
+  entry = k;         // modify each entry
+
+x += y; x -= y; // @$x:=x+y$, $x:=x-y$@
+x *= k; x /= k; // @$x:=kx$, $x:=k^{-1}x$@
+k = x * y;      // @$k:=x^Ty=x\cdot y=\sum_i x_iy_i$@
+k = x.dot(y);   // @$k:=x^Hy=\bar x\cdot y=\sum_i\bar x_iy_i$@
+
+r = x.one_norm();      // @$r:=\sum_i|x_i|$@
+r = x.two_norm();      // @$r:=\smash{\sqrt{\sum_i|x_i|^2}}$@
+r = x.infinity_norm(); // @$r:=\max_i\{|x_i|\}$@
+\end{lstlisting}
+%r = x.two_norm2();     // @$r:=\sum_i|x_i|^2$@
+
+\cxx{template<class K, int rows, int cols> class FieldMatrix;}
+\begin{lstlisting}
+#include <dune/common/identitymatrix.hh>
+#include <dune/common/fmatrix.hh>
+
+FieldMatrix<K, 2, 2> S = { { 0, 1 },
+                           { 1, 0 } };
+FieldMatrix<K, 2, 2> Q = IdentityMatrix<K, 2>();
+
+assert(i < S.rows() && j < S.cols()); // get number of rows and columns
+k = S[i][j]; S[i][j] = k; // access/assign entry
+for(const auto &row : S) for(const auto &entry : row)
+  k += entry;             // access each entry
+for(auto &row : S) for(auto &entry : row)
+  entry = k;              // modify each entry
+
+auto L = Q.leftmultiplyany(S);  // @$L:=SQ$@
+auto R = Q.rightmultiplyany(S); // @$R:=QS$@
+Q.leftmultiply(S);              // @$S:=SQ$@
+Q.rightmultiply(S);             // @$S:=QS$@
+S += Q; S -= Q; // @$S:=S+Q$, $S:=S-Q$@
+S.axpy(k, Q);   // @$S:=S+kQ$@
+S *= k; S /= k; // @$S:=kS$, $S:=k^{-1}S$@
+S.invert();     // @$S:=S^{-1}$@
+
+r = S.frobenius_norm(); // @$r:=\smash{\sqrt{\sum_{ij}|S_{ij}|^2}}$@
+r = S.infinity_norm();  // @$r:=\smash{\max_i\{\sum_j|S_{ij}|\}}$@
+k = S.determinant();    // @$k:=\det S$@
+
+Q.mv      (x, y); // @$y:=Qx$@
+Q.mtv     (x, y); // @$y:=Q^Tx$@
+Q.umv     (x, y); // @$y:=y+Qx$@
+Q.umtv    (x, y); // @$y:=y+Q^Tx$@
+Q.umhv    (x, y); // @$y:=y+Q^Hx$@
+Q.usmv (k, x, y); // @$y:=y+kQx$@
+Q.usmtv(k, x, y); // @$y:=y+kQ^Tx$@
+Q.usmhv(k, x, y); // @$y:=y+kQ^Hx$@
+Q.solve(x, y);    // @find $x$ s.t.\ $Qx=y$@
+\end{lstlisting}
+
+\cxx{#define DUNE_THROW(ExceptionType, message);}
+\begin{lstlisting}
+#include <dune/common/exceptions.hh>
+
+if(i > limit)
+  DUNE_THROW(Dune::Exception,
+             "Error: i > limit (" << i << " > " << limit << ")");
+\end{lstlisting}
+
+\cxx{template<class T> std::string className();}\\
+\cxx{template<class T> std::string className(T& t);}
+\begin{lstlisting}
+#include <dune/common/classname.hh>
+
+template<class Vector>
+void printTypes(const Vector &v) {
+  std::cerr << "Info: Vector type is " << className<Vector>()
+            << ", entry type is " << className(v[0]) << std::endl;
+}
+\end{lstlisting}
+
+%\cxx{ParameterTree}
+
+%\cxx{DynamicVector<T>} \cxx{DynamicMatrix<T>}
+%\cxx{MPIHelper}
+
+\section*{\cxx{dune-geometry}}
 
 \cxx{QuadratureRules<ctype, dim>::rule()}
 
@@ -52,10 +175,10 @@ topologies
 
 geometry interface
 
-\section{\cxx{dune-grid}}
+\section*{\cxx{dune-grid}}
 
 grid interface -> \{ gridview -> \{ iteration: \{ entities<0>, entities,
-      intersections \} -> geometries, indexsets \}, idsets, partitions \}
+      intersection*s \} -> geometries, indexsets \}, idsets, partitions \}
 
 backuprestore
 
@@ -69,7 +192,7 @@ Input: \cxx{GmshReader} \cxx{StructuredGridFactory}
 
 Output: \cxx{VTKWriter} \cxx{SubSamplingVTKWriter} gnuplot
 
-\section{\cxx{dune-istl}}
+\section*{\cxx{dune-istl}}
 
 \cxx{BlockVector} \cxx{BCRSMatrix}
 
@@ -81,7 +204,7 @@ list of preconditioners
 
 list of solvers
 
-\section{\cxx{dune-localfunctions}}
+\section*{\cxx{dune-localfunctions}}
 
 local finite element interface -> { local basis interface, local interpolation
   interface, local coefficients interface }
