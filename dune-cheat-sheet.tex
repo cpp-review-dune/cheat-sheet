@@ -1,8 +1,11 @@
-\documentclass[11pt,DIV=13]{scrartcl}
+\documentclass[landscape,a3paper]{article}
 
+\usepackage[margin=1.5mm]{geometry}
 \usepackage{hyperref}
 \usepackage[utf8]{inputenc}
 \usepackage{listings}
+\usepackage{multicol}
+\usepackage{tikz}
 \usepackage{xcolor}
 
 \def\cxx{\lstinline[language=C++]}
@@ -21,16 +24,42 @@
   emph={[3]stage}, emphstyle={[3]\color{purple}},
   extendedchars=true, escapeinside={@}{@},
   breaklines=false,
-  frame=single,
+%  frame=lines,
+%  backgroundcolor=\color{lightgray},
+}
+
+\setlength{\columnsep}{4mm}
+\setlength{\columnseprule}{1pt}
+
+\newcommand{\head}[1]{
+  \par
+  \tikz\node[text width=\linewidth-.6666em,align=justify,fill=lightgray]{#1};
+  \par
+}
+
+\newcommand{\module}[1]{
+  \par
+  {%
+    \huge\sffamily%
+    \tikz\node[
+      text width=\linewidth-.6666em,
+      align=justify,
+      fill=black,
+      text=white
+    ]{\strut#1\strut};%
+  }
+  \par
 }
 
 \setlength\parindent{0pt}
 
-\begin{document}
+\raggedcolumns
 
-\section*{In General}
+\begin{document}\begin{multicols*}{4}
 
-\cxx{main()} template
+\module{In General}
+
+\head{\cxx{main()} template}
 \begin{lstlisting}
 #include <config.h>
 
@@ -44,14 +73,14 @@ int main(int argc, char **argv)
 }
 \end{lstlisting}
 
-\sh{.cc}-file template
+\head{\sh{.cc}-file template}
 \begin{lstlisting}
 #include <config.h>
 
 // your code and includes go here
 \end{lstlisting}
 
-\sh{.hh}-file template
+\head{\sh{.hh}-file template}
 \begin{lstlisting}
 // For a header that is included like
 // #include <dune/module/dir/header-name.hh>
@@ -64,17 +93,17 @@ int main(int argc, char **argv)
 #endif // DUNE_MODULE_DIR_HEADER_NAME_HH
 \end{lstlisting}
 
-\section*{\cxx{dune-common}}
+\module{\cxx{dune-common}}
 
 In the following, \cxx{r} is of type \cxx{R}, which may be a scalar real type,
 e.g. \cxx{double} or \cxx{float}.  \cxx{k} is of type \cxx{K}, which may be
 may be \cxx{R} or \cxx{std::complex<R>}.
 
-\cxx{template<class K, int size> class FieldVector;}
+\head{\cxx{template<class K, int size> class FieldVector;}}
 \begin{lstlisting}
 #include <dune/common/fvector.hh>
 
-FieldVector<K, 2> x = { 0, 1 }; // @$x_0:=0,\quad x_1:=1$@
+FieldVector<K, 2> x = { 0, 1 }; // @$x_0:=0, x_1:=1$@
 FieldVector<K, 2> y(k);         // @$x_i:=k\quad\forall i$@
 
 assert(i < x.dim()); // get number of entries
@@ -95,21 +124,28 @@ r = x.infinity_norm(); // @$r:=\max_i\{|x_i|\}$@
 \end{lstlisting}
 %r = x.two_norm2();     // @$r:=\sum_i|x_i|^2$@
 
-\cxx{template<class K, int rows, int cols> class FieldMatrix;}
+\head{%
+\cxx{template<class K, int rows, int cols>}
+\cxx{class FieldMatrix;}
+}
 \begin{lstlisting}
-#include <dune/common/identitymatrix.hh>
 #include <dune/common/fmatrix.hh>
 
-FieldMatrix<K, 2, 2> S = { { 0, 1 },
-                           { 1, 0 } };
-FieldMatrix<K, 2, 2> Q = IdentityMatrix<K, 2>();
+FieldMatrix<K, 2, 2> S =
+{ { 0, 1 },                // @$S_{00}:=0,S_{01}:=1$@
+  { 2, 3 } };              // @$S_{10}:=2,S_{11}:=3$@
+FieldMatrix<K, 2, 2> Q(k); // @$Q_{ij}:=k\quad\forall i,j$@
 
-assert(i < S.rows() && j < S.cols()); // get number of rows and columns
-k = S[i][j]; S[i][j] = k; // access/assign entry
-for(const auto &row : S) for(const auto &entry : row)
-  k += entry;             // access each entry
-for(auto &row : S) for(auto &entry : row)
-  entry = k;              // modify each entry
+assert(i < S.rows()); // get number of rows
+assert(j < S.cols()); // get number of columns
+k = S[i][j];          // access entry
+S[i][j] = k;          // assign entry
+for(const auto &row : S)
+  for(const auto &entry : row)
+    k += entry;       // access each entry
+for(auto &row : S)
+  for(auto &entry : row)
+    entry = k;        // modify each entry
 
 auto L = Q.leftmultiplyany(S);  // @$L:=SQ$@
 auto R = Q.rightmultiplyany(S); // @$R:=QS$@
@@ -135,24 +171,26 @@ Q.usmhv(k, x, y); // @$y:=y+kQ^Hx$@
 Q.solve(x, y);    // @find $x$ s.t.\ $Qx=y$@
 \end{lstlisting}
 
-\cxx{#define DUNE_THROW(ExceptionType, message);}
+\head{\cxx{#define DUNE_THROW(ExceptionType, message)}}
 \begin{lstlisting}
 #include <dune/common/exceptions.hh>
 
 if(i > limit)
-  DUNE_THROW(Dune::Exception,
-             "Error: i > limit (" << i << " > " << limit << ")");
+  DUNE_THROW(Exception, "Error: i > limit ("
+             << i << " > " << limit << ")");
 \end{lstlisting}
 
-\cxx{template<class T> std::string className();}\\
-\cxx{template<class T> std::string className(T& t);}
+\head{\cxx{template<class T> std::string className();}\\
+\cxx{template<class T> std::string className(T& t);}}
 \begin{lstlisting}
 #include <dune/common/classname.hh>
 
 template<class Vector>
 void printTypes(const Vector &v) {
-  std::cerr << "Info: Vector type is " << className<Vector>()
-            << ", entry type is " << className(v[0]) << std::endl;
+  std::cerr << "Info: Vector type is "
+            << className<Vector>()
+            << ", entry type is "
+            << className(v[0]) << std::endl;
 }
 \end{lstlisting}
 
@@ -161,7 +199,7 @@ void printTypes(const Vector &v) {
 %\cxx{DynamicVector<T>} \cxx{DynamicMatrix<T>}
 %\cxx{MPIHelper}
 
-\section*{\cxx{dune-geometry}}
+\module{\cxx{dune-geometry}}
 
 \cxx{QuadratureRules<ctype, dim>::rule()}
 
@@ -175,7 +213,7 @@ topologies
 
 geometry interface
 
-\section*{\cxx{dune-grid}}
+\module{\cxx{dune-grid}}
 
 grid interface -> \{ gridview -> \{ iteration: \{ entities<0>, entities,
       intersection*s \} -> geometries, indexsets \}, idsets, partitions \}
@@ -192,7 +230,7 @@ Input: \cxx{GmshReader} \cxx{StructuredGridFactory}
 
 Output: \cxx{VTKWriter} \cxx{SubSamplingVTKWriter} gnuplot
 
-\section*{\cxx{dune-istl}}
+\module{\cxx{dune-istl}}
 
 \cxx{BlockVector} \cxx{BCRSMatrix}
 
@@ -204,14 +242,15 @@ list of preconditioners
 
 list of solvers
 
-\section*{\cxx{dune-localfunctions}}
+\module{\cxx{dune-localfunctions}}
 
 local finite element interface -> { local basis interface, local interpolation
   interface, local coefficients interface }
 
 list of local finite elements
 
-\end{document}
+
+\end{multicols*}\end{document}
 
 
 % tell emacs to use pdflatex
