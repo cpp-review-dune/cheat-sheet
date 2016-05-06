@@ -224,7 +224,21 @@ assert(gt.dim() == 3); // check dimension
 
 %\cxx{LocalGeometryTypeIndex} \cxx{GlobalGeometryTypeIndex}
 
-\cxx{QuadratureRules<ctype, dim>::rule()}
+\head{\cxx{template<class ctype, int dim> class QuadratureRules;}}
+\begin{lstlisting}
+#include <dune/geometry/quadraturerules.hh>
+
+K f(const FieldVector<ctype, dim> &x);
+int p; // max polynomial order of f
+
+K result = 0;
+GeometryType gt; gt.makeSimplex(dim);
+for(const auto &qp :
+    QuadratureRules<ctype, dim>::rule(gt, p))
+  result += qp.weight() * f(qp.position());
+// now result contains the integral of f()
+// over the reference-simplex of dimension dim
+\end{lstlisting}
 
 \cxx{ReferenceElements<ctype, dim>}
 
