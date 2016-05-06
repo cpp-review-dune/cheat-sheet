@@ -23,7 +23,10 @@
   emph={bool,int,unsigned,char,true,false,void}, emphstyle=\color{blue},
   emph={[2]\#include,\#define,\#ifdef,\#endif}, emphstyle={[2]\color{violet}},
   emph={[3]stage}, emphstyle={[3]\color{purple}},
-  extendedchars=true, escapeinside={@}{@},
+  extendedchars=true,
+%  escapeinside={@}{@},
+  mathescape=true,
+  escapebegin={\color{darkgray}},
   breaklines=false,
 %  frame=lines,
 %  backgroundcolor=\color{lightgray},
@@ -104,8 +107,8 @@ may be \cxx{R} or \cxx{std::complex<R>}.
 \begin{lstlisting}
 #include <dune/common/fvector.hh>
 
-FieldVector<K, 2> x = { 0, 1 }; // @$x_0:=0, x_1:=1$@
-FieldVector<K, 2> y(k);         // @$x_i:=k\quad\forall i$@
+FieldVector<K, 2> x = { 0, 1 }; // $x_0:=0, x_1:=1$
+FieldVector<K, 2> y(k);         // $x_i:=k\quad\forall i$
 
 assert(i < x.dim()); // get number of entries
 k = x[i]; x[i] = k;  // access/assign entry
@@ -114,16 +117,16 @@ for(const auto &entry : x)
 for(auto &entry : x)
   entry = k;         // modify each entry
 
-x += y; x -= y; // @$x:=x+y$, $x:=x-y$@
-x *= k; x /= k; // @$x:=kx$, $x:=k^{-1}x$@
-k = x * y;      // @$k:=x^Ty=x\cdot y=\sum_i x_iy_i$@
-k = x.dot(y);   // @$k:=x^Hy=\bar x\cdot y=\sum_i\bar x_iy_i$@
+x += y; x -= y; // $x:=x+y$, $x:=x-y$
+x *= k; x /= k; // $x:=kx$, $x:=k^{-1}x$
+k = x * y;      // $k:=x^Ty=x\cdot y=\sum_i x_iy_i$
+k = x.dot(y);   // $k:=x^Hy=\bar x\cdot y=\sum_i\bar x_iy_i$
 
-r = x.one_norm();      // @$r:=\sum_i|x_i|$@
-r = x.two_norm();      // @$r:=\smash{\sqrt{\sum_i|x_i|^2}}$@
-r = x.infinity_norm(); // @$r:=\max_i\{|x_i|\}$@
+r = x.one_norm();      // $r:=\sum_i|x_i|$
+r = x.two_norm();      // $r:=\smash{\sqrt{\sum_i|x_i|^2}}$
+r = x.infinity_norm(); // $r:=\max_i\{|x_i|\}$
 \end{lstlisting}
-%r = x.two_norm2();     // @$r:=\sum_i|x_i|^2$@
+%r = x.two_norm2();     // $r:=\sum_i|x_i|^2$
 
 \head{%
 \cxx{template<class K, int rows, int cols>}
@@ -133,9 +136,9 @@ r = x.infinity_norm(); // @$r:=\max_i\{|x_i|\}$@
 #include <dune/common/fmatrix.hh>
 
 FieldMatrix<K, 2, 2> S =
-{ { 0, 1 },                // @$S_{00}:=0,S_{01}:=1$@
-  { 2, 3 } };              // @$S_{10}:=2,S_{11}:=3$@
-FieldMatrix<K, 2, 2> Q(k); // @$Q_{ij}:=k\quad\forall i,j$@
+{ { 0, 1 },                // $S_{00}:=0,S_{01}:=1$
+  { 2, 3 } };              // $S_{10}:=2,S_{11}:=3$
+FieldMatrix<K, 2, 2> Q(k); // $Q_{ij}:=k\quad\forall i,j$
 
 assert(i < S.rows()); // get number of rows
 assert(j < S.cols()); // get number of columns
@@ -148,28 +151,28 @@ for(auto &row : S)
   for(auto &entry : row)
     entry = k;        // modify each entry
 
-auto L = Q.leftmultiplyany(S);  // @$L:=SQ$@
-auto R = Q.rightmultiplyany(S); // @$R:=QS$@
-Q.leftmultiply(S);              // @$S:=SQ$@
-Q.rightmultiply(S);             // @$S:=QS$@
-S += Q; S -= Q; // @$S:=S+Q$, $S:=S-Q$@
-S.axpy(k, Q);   // @$S:=S+kQ$@
-S *= k; S /= k; // @$S:=kS$, $S:=k^{-1}S$@
-S.invert();     // @$S:=S^{-1}$@
+auto L = Q.leftmultiplyany(S);  // $L:=SQ$
+auto R = Q.rightmultiplyany(S); // $R:=QS$
+Q.leftmultiply(S);              // $S:=SQ$
+Q.rightmultiply(S);             // $S:=QS$
+S += Q; S -= Q; // $S:=S+Q$, $S:=S-Q$
+S.axpy(k, Q);   // $S:=S+kQ$
+S *= k; S /= k; // $S:=kS$, $S:=k^{-1}S$
+S.invert();     // $S:=S^{-1}$
 
-r = S.frobenius_norm(); // @$r:=\smash{\sqrt{\sum_{ij}|S_{ij}|^2}}$@
-r = S.infinity_norm();  // @$r:=\smash{\max_i\{\sum_j|S_{ij}|\}}$@
-k = S.determinant();    // @$k:=\det S$@
+r = S.frobenius_norm(); // $r:=\smash{\sqrt{\sum_{ij}|S_{ij}|^2}}$
+r = S.infinity_norm();  // $r:=\smash{\max_i\{\sum_j|S_{ij}|\}}$
+k = S.determinant();    // $k:=\det S$
 
-Q.mv      (x, y); // @$y:=Qx$@
-Q.mtv     (x, y); // @$y:=Q^Tx$@
-Q.umv     (x, y); // @$y:=y+Qx$@
-Q.umtv    (x, y); // @$y:=y+Q^Tx$@
-Q.umhv    (x, y); // @$y:=y+Q^Hx$@
-Q.usmv (k, x, y); // @$y:=y+kQx$@
-Q.usmtv(k, x, y); // @$y:=y+kQ^Tx$@
-Q.usmhv(k, x, y); // @$y:=y+kQ^Hx$@
-Q.solve(x, y);    // @find $x$ s.t.\ $Qx=y$@
+Q.mv      (x, y); // $y:=Qx$
+Q.mtv     (x, y); // $y:=Q^Tx$
+Q.umv     (x, y); // $y:=y+Qx$
+Q.umtv    (x, y); // $y:=y+Q^Tx$
+Q.umhv    (x, y); // $y:=y+Q^Hx$
+Q.usmv (k, x, y); // $y:=y+kQx$
+Q.usmtv(k, x, y); // $y:=y+kQ^Tx$
+Q.usmhv(k, x, y); // $y:=y+kQ^Hx$
+Q.solve   (x, y); // find $x$ such that $Qx=y$
 \end{lstlisting}
 
 \head{\cxx{#define DUNE_THROW(ExceptionType, message)}}
