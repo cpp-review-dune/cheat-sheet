@@ -226,6 +226,31 @@ assert(gt.dim() == 3); // check dimension
 
 %\cxx{LocalGeometryTypeIndex} \cxx{GlobalGeometryTypeIndex}
 
+\head{Concept \cxx{Geometry}}
+\begin{lstlisting}
+using Geo = ...; Geo geo;
+
+using ctype = Geo::ctype;
+int ldim = Geo::mydimension;    // local dim
+int gdim = Geo::coorddimension; // global dim
+
+Geo::LocalCoordinate  xl; // $\hat x\in\text{ctype}^\text{ldim}$
+Geo::GlobalCoordinate x;  // $x\in\text{ctype}^\text{gdim}$
+x  = geo.global(xl);      // $x:=g(\hat x)$
+xl = geo.local(x);        // $\hat x:=g^{-1}(x)$
+
+// @$J^{-T}\in\text{ctype}^\text{gdim$\times$ldim}$, $J_{ij}:=\partial g_i/\partial\hat x_j$, $\mu:=\sqrt{|\det J^TJ|}$@
+Geo::JacobianInverseTransposed JInvT =
+  geo.jacobianInverseTransposed(xl);
+ctype mu = geo.integrationElement(xl);
+
+GeometryType gt = geo.type(); // shape
+assert(i < geo.corners()); // count corners
+x = geo.corner(i);         // access corner
+x = geo.center();          // @\itshape roughly@
+ctype v = geo.volume();    // in global coords
+\end{lstlisting}
+
 \head{\cxx{template<class ctype, int dim>}
   \cxx{class ReferenceElements;}}
 \begin{lstlisting}
@@ -277,8 +302,6 @@ for(const auto &qp :
 Virtual refinement
 
 topologies
-
-geometry interface
 
 \module{\cxx{dune-grid}}
 
