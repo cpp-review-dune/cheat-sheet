@@ -1,7 +1,9 @@
 \documentclass[landscape,a3paper]{article}
 
+\usepackage{amsmath}
 \usepackage{bold-extra}
 \usepackage[margin=1.5mm]{geometry}
+\usepackage{graphicx}
 \usepackage{hyperref}
 \usepackage[utf8]{inputenc}
 \usepackage{listings}
@@ -224,6 +226,38 @@ assert(gt.dim() == 3); // check dimension
 
 %\cxx{LocalGeometryTypeIndex} \cxx{GlobalGeometryTypeIndex}
 
+\head{\cxx{template<class ctype, int dim>}
+  \cxx{class ReferenceElements;}}
+\begin{lstlisting}
+#include <dune/geometry/referenceelements.hh>
+
+using Factory = ReferenceElements<ctype, 3>;
+const auto &refTet = Factory::simplex();
+const auto &refHex = Factory::cube();
+GeometryType gt; gt.makePrism();
+const auto &ref = Factory::general(gt);
+
+// Info about ref itself
+gt = ref.type();
+ctype v = ref.volume();
+ref.size(c); // count subentities of codim c
+
+// Info about subentity (i,c)
+gt = ref.type(i,c);
+// position of barycenter
+FieldVector<ctype, 3> x = ref.position(i,c)
+// count sub-subentities of codim cc
+ref.size(i,c, cc);
+// transform number of sub-subentity to ref
+ref.subEntity(i,c, ii,cc);
+\end{lstlisting}
+\includegraphics[width=0.5\linewidth]{figures/triangle}
+\includegraphics[width=0.5\linewidth]{figures/quadrilateral}
+\foreach\shape in {tetrahedron, pyramid, prism, hexahedron} {
+  \includegraphics[width=0.5\linewidth]{figures/\shape}
+  \includegraphics[width=0.5\linewidth]{figures/\shape_edges}
+}
+
 \head{\cxx{template<class ctype, int dim> class QuadratureRules;}}
 \begin{lstlisting}
 #include <dune/geometry/quadraturerules.hh>
@@ -239,8 +273,6 @@ for(const auto &qp :
 // now result contains the integral of f()
 // over the reference-simplex of dimension dim
 \end{lstlisting}
-
-\cxx{ReferenceElements<ctype, dim>}
 
 Virtual refinement
 
