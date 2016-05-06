@@ -1,0 +1,4 @@
+*.aux
+*.out
+/dune-cheat-sheet.log
+/dune-cheat-sheet.pdf

@@ -1,0 +1,101 @@
+\documentclass[11pt,DIV=13]{scrartcl}
+
+\usepackage{hyperref}
+\usepackage[utf8]{inputenc}
+\usepackage{listings}
+\usepackage{xcolor}
+
+\def\cxx{\lstinline[language=C++]}
+\lstset{basicstyle=\ttfamily}
+\lstset{
+  language=C++,
+  defaultdialect=[11]C++,
+  tabsize=4,
+%  stringstyle=\ttfamily,
+  keywordstyle=\color{violet},
+  commentstyle=\color{darkgray},
+  stringstyle=\color{orange},
+  emph={bool,int,unsigned,char,true,false,void}, emphstyle=\color{blue},
+  emph={[2]\#include,\#define,\#ifdef,\#endif}, emphstyle={[2]\color{violet}},
+  emph={[3]stage}, emphstyle={[3]\color{purple}},
+  extendedchars=true, escapeinside={/*@}{@*/},
+  breaklines=false,
+}
+
+\begin{document}
+
+\section{\cxx{dune-common}}
+
+\cxx{FieldVector<T, size>} \cxx{FieldMatrix<T, rows, cols>}
+
+\cxx{DynamicVector<T>} \cxx{DynamicMatrix<T>}
+
+\cxx{MPIHelper}
+
+\cxx{DUNE_THROW(ExceptionType, "Message " << "for " << "e.what()")}
+
+\cxx{className<t>()} \cxx{className(obj)}
+
+\cxx{ParameterTree}
+
+\section{\cxx{dune-geometry}}
+
+\cxx{QuadratureRules<ctype, dim>::rule()}
+
+\cxx{ReferenceElements<ctype, dim>}
+
+\cxx{GeometryType} \cxx{LocalGeometryTypeIndex} \cxx{GlobalGeometryTypeIndex}
+
+Virtual refinement
+
+topologies
+
+geometry interface
+
+\section{\cxx{dune-grid}}
+
+grid interface -> \{ gridview -> \{ iteration: \{ entities<0>, entities,
+      intersections \} -> geometries, indexsets \}, idsets, partitions \}
+
+backuprestore
+
+seeds
+
+mapper: mcmg, scsg, universal
+
+\cxx{YaspGrid} \cxx{GeometryGrid} \cxx{OneDGrid} \cxx{UGGrid}
+
+Input: \cxx{GmshReader} \cxx{StructuredGridFactory}
+
+Output: \cxx{VTKWriter} \cxx{SubSamplingVTKWriter} gnuplot
+
+\section{\cxx{dune-istl}}
+
+\cxx{BlockVector} \cxx{BCRSMatrix}
+
+\cxx{MatrixAdapter} \cxx{Preconditioner}
+
+list of preconditioners
+
+\cxx{Solver} Interface \cxx{InverseOperatorResult}
+
+list of solvers
+
+\section{\cxx{dune-localfunctions}}
+
+local finite element interface -> { local basis interface, local interpolation
+  interface, local coefficients interface }
+
+list of local finite elements
+
+\end{document}
+
+
+% tell emacs to use pdflatex
+%%% Local Variables:
+%%% mode: latex
+%%% mode: TeX-PDF
+%%% TeX-master: t
+%%% mode: flyspell
+%%% ispell-local-dictionary: "en_US"
+%%% End:
