@@ -24,7 +24,7 @@
   emph={[2]\#include,\#define,\#ifdef,\#endif}, emphstyle={[2]\color{violet}},
   emph={[3]stage}, emphstyle={[3]\color{purple}},
   extendedchars=true,
-%  escapeinside={@}{@},
+  escapechar=@,
   mathescape=true,
   escapebegin={\color{darkgray}},
   breaklines=false,
@@ -205,11 +205,28 @@ void printTypes(const Vector &v) {
 
 \module{\cxx{dune-geometry}}
 
+\head{\cxx{class GeometryType;}}
+\begin{lstlisting}
+#include <dune/geometry/type.hh>
+
+GeometryType gt;
+gt.makeVertex();     gt.makeLine();
+gt.makeTriangle();   gt.makeQuadrilateral();
+gt.makeTetrahdron(); gt.makePyramid();
+gt.makePrism();      gt.makeHexahedron();
+gt.makeSimplex(2); // same as makeTriangle()
+gt.makeCube(3);    // same as makeHexahedron()
+// for each make@\itshape Shape@() there is an is@\itshape Shape@()
+assert(gt.isHexahedron());
+assert(gt.isCube());   // ignore dimension
+assert(gt.dim() == 3); // check dimension
+\end{lstlisting}
+
+%\cxx{LocalGeometryTypeIndex} \cxx{GlobalGeometryTypeIndex}
+
 \cxx{QuadratureRules<ctype, dim>::rule()}
 
 \cxx{ReferenceElements<ctype, dim>}
-
-\cxx{GeometryType} \cxx{LocalGeometryTypeIndex} \cxx{GlobalGeometryTypeIndex}
 
 Virtual refinement
 
