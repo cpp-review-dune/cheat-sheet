@@ -2,6 +2,7 @@
 
 \usepackage{amsmath}
 \usepackage{bold-extra}
+\usepackage{dirtree}
 \usepackage[margin=1.5mm]{geometry}
 \usepackage{graphicx}
 \usepackage{hyperref}
@@ -309,14 +310,132 @@ TODO: integral over a geometry over a gradient (incl piola)
 
 \module{\cxx{dune-grid}}
 
-grid interface -> \{ gridview -> \{ iteration: \{ entities<0>, entities,
-      intersection*s \} -> geometries, indexsets \}, idsets, partitions \}
+\dirtree{%
+.1 \cxx{Grid} (\cxx{YaspGrid}, \cxx{UGGrid}, \cxx{OneDGrid},
+   \cxx{GeometryGrid}).
+  .2 \cxx{GridView} (\cxx{LevelGridView}, \cxx{LeafGridView}).
+    .3 \cxx{IndexSet}.
+    .3 \cxx{Entity} (elements, facets, edges, vertices).
+      .4 \cxx{Geometry} (entity to global).
+    .3 \cxx{Intersection}.
+      .4 \cxx{Geometry} (intersection to global).
+      .4 \cxx{Entity} (inside/outside element/cell).
+      .4 \cxx{Geometry} (intersection to inside/outside).
+}
 
-backuprestore
+\head{Concept \cxx{Grid} -- hierarchy of meshes}
+\begin{lstlisting}
+Grid g;
 
-seeds
+using ctype = Grid::ctype;
+int dim  = Grid::dimension;
+// think "surface grid"
+int dimw = Grid::dimensionworld;
 
-mapper: mcmg, scsg, universal
+g.globalRefine(); // add a level
+assert(g.maxLevel() > 0);
+// all coarse/macro entities
+auto levelView = g.leafGridView(0);
+// all finest/leaf entities
+auto leafView = g.leafGridView();
+\end{lstlisting}
+
+\head{Concept \cxx{GridView} -- one mesh from the hierarchy}
+\begin{lstlisting}
+GridView gv;
+
+using Grid = GridView::Grid;
+using ctype = GridView::ctype; // as on Grid
+int dim  = GridView::dimension;
+int dimw = GridView::dimensionworld;
+
+const Grid &g  = gv.grid();
+const auto &is = gv.indexSet();
+// count entities...
+int n = gv.size(c);  // with codim c
+int n = gv.size(gt); // with GeometryType gt
+
+// iterate over entities in gv
+for(const auto &elem   : elements(gv)) ...;
+for(const auto &facet  : facets  (gv)) ...;
+for(const auto &edge   : edges   (gv)) ...;
+for(const auto &vertex : vertices(gv)) ...;
+// iterate intersections of elem in gv
+for(const auto &isect  :
+      intersections(gv, elem)) ...;
+\end{lstlisting}
+
+\head{Concept \cxx{IndexSet} -- numbering within \cxx{GridView}s}
+Entities of different shape (\cxx{GeometryType}) are numbered separately.
+% -- a triangular entity may have the same index as a quadrilateral entity
+% within the same grid view.
+See \cxx{MultipleCodimMultipleGeomTypeMapper}.
+\begin{lstlisting}
+const IndexSet &is;
+
+Entity e; // any codim
+int i, c; // number/codim of subentity
+is.index(e);         // index of e in gv
+is.subIndex(e, i,c); // index of subentity
+\end{lstlisting}
+
+\head{Concept \cxx{Entity<codim>} -- elements, facets, edges, vertices}
+\begin{lstlisting}
+Entity e;
+
+// all entities: mydim + codim == dim
+// elements: codim == 0; facets:   codim == 1
+// edges:    mydim == 1; vertices: mydim == 0
+int codim = Entity::codimension;
+int dim   = Entity::dimension; // as on Grid
+int mydim = Entity::mydimension;
+
+GeometryType gt = e.type(); // Shape
+// the LevelGridView that e is part of
+int l = e.level();
+
+// transform mydimension -> dimensionworld
+Entity::Geometry geo = e.geometry();
+\end{lstlisting}
+
+\head{Concept \cxx{Intersection} -- connectivity between elements}
+\begin{lstlisting}
+Intersection is;
+
+using ctype = Intersection::ctype;
+// local coords  (== Grid::dimension - 1)
+int mydim = Intersection::mydimension;
+// global coords (== Grid::dimensionworld)
+int dimw  = Intersection::dimensionworld;
+
+GeometryType gt = is.type(); // Shape
+
+// transform intersection -> world
+Intersection::Geometry geo = is.geometry();
+Intersection::LocalCoordinate  xl;
+Intersection::GlobalCoordinate nu_u, nu_q;
+// $\|\nu_u\|_2=1$, $\nu_q:=\nu_u\cdot\text{geo.integrationElement(xl)}$
+nu_u = is.unitOuterNormal(xl);
+nu_q = is.integrationOuterNormal(xl);
+
+using Element = Intersection::Entity;
+using LGeo    = Intersection::LocalGeometry;
+
+// inside element (always exists)
+Element in  = is.inside();
+// transform intersection -> inside
+LGeo inGeo  = is.geometryInInside();
+// index of sub-facet of in that contains is
+int inIdx   = is.indexInInside();
+
+if(is.neighbor()) { // check outside exists
+  Element out = is.outside();
+  LGeo outGeo = is.geometryInOutside();
+  int outIdx  = is.indexInOutside();
+} // otherwise on domain boundary
+\end{lstlisting}
+
+%mapper: mcmg, scsg, universal
 
 \cxx{YaspGrid} \cxx{GeometryGrid} \cxx{OneDGrid} \cxx{UGGrid}
 
