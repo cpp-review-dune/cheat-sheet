@@ -485,6 +485,67 @@ writer.write("file_name_base");
 
 %Output: \cxx{SubSamplingVTKWriter} gnuplot
 
+\module{\cxx{dune-localfunctions}}
+
+\dirtree{%
+.1 \cxx{LocalFiniteElement}.
+  .2 \cxx{LocalBasis}.
+  .2 \cxx{LocalInterpolation}.
+  .2 \cxx{LocalCoefficients}.
+}
+
+\head{Concept \cxx{LocalFiniteElement}}
+\begin{lstlisting}
+using LocalFiniteElement = ...;
+LocalFiniteElement lfe;
+
+GeometryType             gt = lfe.type();
+unsigned shapeFunctionCount = lfe.size();
+
+const auto &lb = lfe.localBasis();
+const auto &li = lfe.localInterpolation();
+const auto &lc = lfe.localCoefficients();
+\end{lstlisting}
+
+\head{Concept \cxx{LocalBasis} -- evaluate shape functions and derivatives}
+\begin{lstlisting}
+using LocalBasis = ...; LocalBasis lb;
+
+unsigned shapeFunctionCount = lb.size();
+unsigned p = lb.order(); // max polynom order
+
+using T = LocalBasis::Traits;
+unsigned dimD = T::dimDomain;
+using DF      = T::DomainFieldType;
+using Domain  = T::DomainType;   // $=\text{DF}^\text{dimD}$
+unsigned dimR = T::dimRange;
+using RF      = T::RangeFieldType;
+using Range   = T::RangeType;    // $=\text{RF}^\text{dimR}$
+
+Domain xl;               // $\hat x$
+std::vector<Range> y;    // y[i][j]$=y^{(i)}_j$
+// resizes y to fit; $y^{(i)}_j:=\hat\varphi^{(i)}_j(\hat x)\quad\forall i$
+lb.evaluateFunction(xl, y); // resizes y to fit
+
+// only guaranteed for T::diffOrder > 0:
+using Jacobian = T::JacobianType; // $=\text{RF}^{\text{dimR}\times\text{dimD}}$
+std::vector<Jacobian> J; // J[i][j][k]$=J^{(i)}_{jk}$
+// resizes J to fit; $J^{(i)}_{jk}:=(\partial\hat\varphi^{(i)}_j/\partial\hat x_k)|_{\hat x}\quad\forall i,j,k$
+lb.evaluateJacobian(xl, J);
+// for scalar bases (dimR==1): J[i][0]$=\hat\nabla\hat\varphi^{(i)}$
+\end{lstlisting}
+
+\head{Concept \cxx{LocalInterpolation} -- interpolate into shape functions}
+TODO
+
+\head{Concept \cxx{LocalCoefficients} -- DoF position database}
+TODO
+
+\head{\cxx{class LocalKey;} -- DoF position info format}
+TODO
+
+TODO: list of local finite elements
+
 \module{\cxx{dune-istl}}
 
 \cxx{BlockVector} \cxx{BCRSMatrix}
@@ -496,14 +557,6 @@ list of preconditioners
 \cxx{Solver} Interface \cxx{InverseOperatorResult}
 
 list of solvers
-
-\module{\cxx{dune-localfunctions}}
-
-local finite element interface -> { local basis interface, local interpolation
-  interface, local coefficients interface }
-
-list of local finite elements
-
 
 \end{multicols*}\end{document}
 
