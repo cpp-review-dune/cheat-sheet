@@ -452,9 +452,38 @@ YaspGrid<3> grid1({ -1, -1, -1 }, { 1, 1, 1 },
 \end{lstlisting}
 %\cxx{GeometryGrid} \cxx{OneDGrid} \cxx{UGGrid}
 
-Input: \cxx{GmshReader} \cxx{StructuredGridFactory}
+%Input: \cxx{GmshReader} \cxx{StructuredGridFactory}
 
-Output: \cxx{VTKWriter} \cxx{SubSamplingVTKWriter} gnuplot
+\head{\cxx{template<class GridView> class VTKWriter;}\\
+  Generate files for \sh{paraview}}
+\begin{lstlisting}
+#include <dune/grid/io/file/vtk/vtkwriter.hh>
+
+GridView gv;
+double f(FieldVector<ctype, dim> xg);
+
+// for multiple possible GeometryTypes use
+// MultipleCodimMultipleGeomTypeMapper instead
+const auto &is = gv.indexSet();
+
+// interpolate f to piecewise constants
+std::vector<double> p0(gv.size(0))
+for(const auto &e : elements(gv))
+  p0[is.index(e)] = f(e.geometry().center());
+
+// interpolate f to P1/Q1
+std::vector<double> p1(gv.size(dim));
+for(const auto &v : vertices(gv))
+  p1[is.index(v)] = f(v.geometry().center());
+
+// output the two interpolations of f
+VTKWriter<GridView> writer(gv);
+writer.addCellData(p0, "constants");
+writer.addVertexData(p1, "linears");
+writer.write("file_name_base");
+\end{lstlisting}
+
+%Output: \cxx{SubSamplingVTKWriter} gnuplot
 
 \module{\cxx{dune-istl}}
 
