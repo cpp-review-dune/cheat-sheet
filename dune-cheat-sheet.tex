@@ -349,8 +349,8 @@ using ctype = GridView::ctype; // as on Grid
 int dim  = GridView::dimension;
 int dimw = GridView::dimensionworld;
 
-const Grid &g  = gv.grid();
-const auto &is = gv.indexSet();
+const Grid &g      = gv.grid();
+const auto &idxSet = gv.indexSet();
 // count entities...
 int n = gv.size(c);  // with codim c
 int n = gv.size(gt); // with GeometryType gt
@@ -371,12 +371,12 @@ Entities of different shape (\cxx{GeometryType}) are numbered separately.
 % within the same grid view.
 See \cxx{MultipleCodimMultipleGeomTypeMapper}.
 \begin{lstlisting}
-const IndexSet &is;
+const IndexSet &idxSet;
 
 Entity e; // any codim
 int i, c; // number/codim of subentity
-is.index(e);         // index of e in gv
-is.subIndex(e, i,c); // index of subentity
+idxSet.index(e);         // index of e in gv
+idxSet.subIndex(e, i,c); // index of subentity
 \end{lstlisting}
 
 \head{Concept \cxx{Entity<codim>} -- elements, facets, edges, vertices}
@@ -400,7 +400,7 @@ Entity::Geometry geo = e.geometry();
 
 \head{Concept \cxx{Intersection} -- connectivity between elements}
 \begin{lstlisting}
-Intersection is;
+Intersection isect;
 
 using ctype = Intersection::ctype;
 // local coords  (== Grid::dimension - 1)
@@ -408,30 +408,30 @@ int mydim = Intersection::mydimension;
 // global coords (== Grid::dimensionworld)
 int dimw  = Intersection::dimensionworld;
 
-GeometryType gt = is.type(); // Shape
+GeometryType gt = isect.type(); // Shape
 
 // transform intersection -> world
-Intersection::Geometry geo = is.geometry();
+Intersection::Geometry geo = isect.geometry();
 Intersection::LocalCoordinate  xl;
 Intersection::GlobalCoordinate nu_u, nu_q;
 // $\|\nu_u\|_2=1$, $\nu_q:=\nu_u\cdot\text{geo.integrationElement(xl)}$
-nu_u = is.unitOuterNormal(xl);
-nu_q = is.integrationOuterNormal(xl);
+nu_u = isect.unitOuterNormal(xl);
+nu_q = isect.integrationOuterNormal(xl);
 
 using Element = Intersection::Entity;
 using LGeo    = Intersection::LocalGeometry;
 
 // inside element (always exists)
-Element in  = is.inside();
+Element in = isect.inside();
 // transform intersection -> inside
-LGeo inGeo  = is.geometryInInside();
-// index of sub-facet of in that contains is
-int inIdx   = is.indexInInside();
+LGeo inGeo = isect.geometryInInside();
+// index of subfacet of in that contains isect
+int inIdx  = isect.indexInInside();
 
-if(is.neighbor()) { // check outside exists
-  Element out = is.outside();
-  LGeo outGeo = is.geometryInOutside();
-  int outIdx  = is.indexInOutside();
+if(isect.neighbor()) { // check outside exists
+  Element out = isect.outside();
+  LGeo outGeo = isect.geometryInOutside();
+  int outIdx  = isect.indexInOutside();
 } // otherwise on domain boundary
 \end{lstlisting}
 
@@ -464,17 +464,17 @@ double f(FieldVector<ctype, dim> xg);
 
 // for multiple possible GeometryTypes use
 // MultipleCodimMultipleGeomTypeMapper instead
-const auto &is = gv.indexSet();
+const auto &set = gv.indexSet();
 
 // interpolate f to piecewise constants
 std::vector<double> p0(gv.size(0))
 for(const auto &e : elements(gv))
-  p0[is.index(e)] = f(e.geometry().center());
+  p0[set.index(e)] = f(e.geometry().center());
 
 // interpolate f to P1/Q1
 std::vector<double> p1(gv.size(dim));
 for(const auto &v : vertices(gv))
-  p1[is.index(v)] = f(v.geometry().center());
+  p1[set.index(v)] = f(v.geometry().center());
 
 // output the two interpolations of f
 VTKWriter<GridView> writer(gv);
@@ -517,18 +517,18 @@ unsigned p = lb.order(); // max polynom order
 using T = LocalBasis::Traits;
 unsigned dimD = T::dimDomain;
 using DF      = T::DomainFieldType;
-using Domain  = T::DomainType;   // $=\text{DF}^\text{dimD}$
+using Domain  = T::DomainType;    // $\text{DF}^\text{dimD}$
 unsigned dimR = T::dimRange;
 using RF      = T::RangeFieldType;
-using Range   = T::RangeType;    // $=\text{RF}^\text{dimR}$
+using Range   = T::RangeType;     // $\text{RF}^\text{dimR}$
 
 Domain xl;               // $\hat x$
 std::vector<Range> y;    // y[i][j]$=y^{(i)}_j$
 // resizes y to fit; $y^{(i)}_j:=\hat\varphi^{(i)}_j(\hat x)\quad\forall i$
-lb.evaluateFunction(xl, y); // resizes y to fit
+lb.evaluateFunction(xl, y);
 
 // only guaranteed for T::diffOrder > 0:
-using Jacobian = T::JacobianType; // $=\text{RF}^{\text{dimR}\times\text{dimD}}$
+using Jacobian = T::JacobianType; // $\text{RF}^{\text{dimR}\times\text{dimD}}$
 std::vector<Jacobian> J; // J[i][j][k]$=J^{(i)}_{jk}$
 // resizes J to fit; $J^{(i)}_{jk}:=(\partial\hat\varphi^{(i)}_j/\partial\hat x_k)|_{\hat x}\quad\forall i,j,k$
 lb.evaluateJacobian(xl, J);
