@@ -437,7 +437,20 @@ if(is.neighbor()) { // check outside exists
 
 %mapper: mcmg, scsg, universal
 
-\cxx{YaspGrid} \cxx{GeometryGrid} \cxx{OneDGrid} \cxx{UGGrid}
+\head{\cxx{template<int dim> class YaspGrid;}\\
+  Yet Another Structured Parallel Grid}
+Implements concept \cxx{Grid}.
+\begin{lstlisting}
+#include <dune/grid/yaspgrid.hh>
+
+// construct unit square $[0,1]^2$ with one element
+YaspGrid<2> grid0({ 1, 1 }, { 1, 1 });
+
+// construct cube $[-1,1]^3$ with $8=2^3$ elements
+YaspGrid<3> grid1({ -1, -1, -1 }, { 1, 1, 1 },
+                  { 2, 2, 2 });
+\end{lstlisting}
+%\cxx{GeometryGrid} \cxx{OneDGrid} \cxx{UGGrid}
 
 Input: \cxx{GmshReader} \cxx{StructuredGridFactory}
 
