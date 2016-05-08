@@ -335,7 +335,7 @@ int dimw = Grid::dimensionworld;
 g.globalRefine(); // add a level
 assert(g.maxLevel() > 0);
 // all coarse/macro entities
-auto levelView = g.leafGridView(0);
+auto levelView = g.levelGridView(0);
 // all finest/leaf entities
 auto leafView = g.leafGridView();
 \end{lstlisting}
