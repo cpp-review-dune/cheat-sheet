@@ -332,7 +332,7 @@ int dim  = Grid::dimension;
 // think "surface grid"
 int dimw = Grid::dimensionworld;
 
-g.globalRefine(); // add a level
+g.globalRefine(n); // add n levels
 assert(g.maxLevel() > 0);
 // all coarse/macro entities
 auto levelView = g.levelGridView(0);
