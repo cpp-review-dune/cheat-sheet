@@ -1,0 +1,18 @@
+---
+pages:
+  image: debian
+  variables:
+    DEBIAN_FRONTEND: noninteractive
+  script:
+  - apt-get --yes --no-install-recommends update
+  - apt-get --yes --no-install-recommends install inkscape make
+      texlive-latex-extra texlive-plain-generic texlive-fonts-extra
+  - make -C figures -j$(nproc)
+  - pdflatex dune-cheat-sheet
+  - mkdir public
+  - cp dune-cheat-sheet.pdf public/
+  artifacts:
+    paths:
+    - public/
+
+  
